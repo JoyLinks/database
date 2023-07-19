@@ -13,7 +13,7 @@ SELECT * FROM `users` WHERE `mobile`=?mobile;
 ```
 
 #### 软件架构
-封装JDBC操作，提供SQL命名参数支持；
+封装JDBC操作，提供SQL命名参数支持，需要数据库驱动，除外没有其它依赖；
 1. 提供SQL命名参数支持；
 2. 命名参数设置方法为setValue(name,value)，当参数类型调整时无须修改方法名；
 3. 数据读取方法为getValue(name,default)，强制其指定默认值，如果数据库返回null用默认值替代；
