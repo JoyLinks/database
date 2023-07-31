@@ -22,6 +22,16 @@ SELECT * FROM `users` WHERE `mobile`=?mobile;
 
 #### 使用说明
 
+添加 Maven 依赖，在项目的pom.xml文件中
+
+```xml
+<dependency>
+	<groupId>com.joyzl</groupId>
+	<artifactId>database</artifactId>
+	<version>2.1</version>
+</dependency>
+```
+
 1.  执行数据操作之前必须初始化
 ```java
 Database.initialize(int type, String url, String user, String password);
