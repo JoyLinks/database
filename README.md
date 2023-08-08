@@ -115,5 +115,5 @@ Database.destory();
 
 #### 参与贡献
 
-1. ZhangXi
+1. 张希 ZhangXi
 2. 中翌智联 www.joyzl.com
