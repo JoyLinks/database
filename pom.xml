@@ -6,7 +6,7 @@
 
 	<groupId>com.joyzl</groupId>
 	<artifactId>database</artifactId>
-	<version>2.1</version>
+	<version>2.2.1</version>
 	<name>database</name>
 	<description>为JDBC数据库操作标准SQL语句提供命名参数支持</description>
 	<url>https://github.com/JoyLinks/database</url>
@@ -63,6 +63,12 @@
 			<groupId>com.oracle.database.jdbc</groupId>
 			<artifactId>ojdbc11</artifactId>
 			<version>23.2.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.9.2</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

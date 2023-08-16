@@ -41,7 +41,7 @@ public class Statement implements Closeable {
 	/**
 	 * 初始化数据库操作状态对象
 	 *
-	 * @param sql         命名参数SQL
+	 * @param sql 命名参数SQL
 	 * @param transaction 是否开启事务
 	 */
 	public Statement(String sql, boolean transaction) {
@@ -56,8 +56,7 @@ public class Statement implements Closeable {
 			if (namedsql.isCall()) {
 				statement = connection.prepareCall(namedsql.getExcuteSQL());
 			} else {
-				statement = connection.prepareStatement(namedsql.getExcuteSQL(),
-						java.sql.Statement.RETURN_GENERATED_KEYS);
+				statement = connection.prepareStatement(namedsql.getExcuteSQL(), java.sql.Statement.RETURN_GENERATED_KEYS);
 			}
 		} catch (SQLException e) {
 			error = true;
@@ -68,8 +67,9 @@ public class Statement implements Closeable {
 	/**
 	 * 初始化数据库操作状态对象
 	 *
-	 * @param sql       命名参数SQL
-	 * @param statement 关联的 {@link Statement} 如果开启了事务新的 {@link Statement} 也将开启事务。
+	 * @param sql 命名参数SQL
+	 * @param statement 关联的 {@link Statement} 如果开启了事务新的 {@link Statement}
+	 *            也将开启事务。
 	 */
 	public Statement(String sql, Statement statement) {
 		namedsql = NamedSQL.get(sql);
@@ -78,8 +78,7 @@ public class Statement implements Closeable {
 			if (namedsql.isCall()) {
 				this.statement = connection.prepareCall(namedsql.getExcuteSQL());
 			} else {
-				this.statement = connection.prepareStatement(namedsql.getExcuteSQL(),
-						java.sql.Statement.RETURN_GENERATED_KEYS);
+				this.statement = connection.prepareStatement(namedsql.getExcuteSQL(), java.sql.Statement.RETURN_GENERATED_KEYS);
 			}
 
 			// 事务状态由connection.getAutoCommit()标识
@@ -113,6 +112,11 @@ public class Statement implements Closeable {
 	 */
 	public final boolean execute() {
 		try {
+			if (result != null) {
+				// 多次执行时自动关闭上一次的结果集
+				result.close();
+				result = null;
+			}
 			if (batch) {
 				results = statement.executeBatch();
 				// 批量处理时无须对每个执行的影响数量进行判断
@@ -158,11 +162,22 @@ public class Statement implements Closeable {
 	 * @return 0 没有记录被更新 / 1~n 更新的记录数 / -1 如果执行的是查询
 	 */
 	public final int getUpdatedCount() {
-		try {
-			return statement.getUpdateCount();
-		} catch (SQLException ex) {
-			error = true;
-			throw new RuntimeException(ex);
+		if (batch) {
+			if (results == null) {
+				return 0;
+			}
+			int count = 0;
+			for (int index = 0; index < results.length; index++) {
+				count += results[index];
+			}
+			return count;
+		} else {
+			try {
+				return statement.getUpdateCount();
+			} catch (SQLException ex) {
+				error = true;
+				throw new RuntimeException(ex);
+			}
 		}
 	}
 
@@ -176,13 +191,47 @@ public class Statement implements Closeable {
 	}
 
 	/**
+	 * 如果执行插入，则移动到下一条记录的自动ID
+	 *
+	 * @return 有ID可读 true / false 没有ID可读
+	 */
+	public final boolean nextAutoId() {
+		try {
+			if (result == null) {
+				result = statement.getGeneratedKeys();
+				if (result == null) {
+					return false;
+				}
+			}
+			if (result.next()) {
+				return true;
+			} else {
+				result.close();
+				result = null;
+				return false;
+			}
+		} catch (SQLException ex) {
+			error = true;
+			throw new RuntimeException(ex);
+		}
+	}
+
+	/**
 	 * 获取创建新记录时数据库生成的记录ID
 	 *
 	 * @return 只有具有自增id特性的数据插入操作才会返回有效id / 0 未返回有效id
 	 */
 	public final int getAutoId() {
-		try (ResultSet result = statement.getGeneratedKeys()) {
-			if (result.next()) {
+		try {
+			if (result == null) {
+				result = statement.getGeneratedKeys();
+				if (result == null) {
+					return 0;
+				}
+				if (result.next()) {
+					return result.getInt(1);
+				}
+			} else {
 				return result.getInt(1);
 			}
 		} catch (SQLException ex) {
@@ -253,7 +302,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, byte[] value) {
@@ -275,7 +324,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值
 	 */
 	public final void setValue(String name, byte value) {
@@ -293,7 +342,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, Byte value) {
@@ -315,7 +364,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值
 	 */
 	public final void setValue(String name, boolean value) {
@@ -333,7 +382,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, Boolean value) {
@@ -355,7 +404,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值
 	 */
 	public final void setValue(String name, short value) {
@@ -373,7 +422,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, Short value) {
@@ -395,7 +444,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值
 	 */
 	public final void setValue(String name, int value) {
@@ -413,7 +462,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, Integer value) {
@@ -435,7 +484,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值
 	 */
 	public final void setValue(String name, long value) {
@@ -453,7 +502,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, Long value) {
@@ -475,7 +524,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值
 	 */
 	public final void setValue(String name, float value) {
@@ -493,7 +542,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, Float value) {
@@ -515,7 +564,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值
 	 */
 	public final void setValue(String name, double value) {
@@ -533,7 +582,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, Double value) {
@@ -555,7 +604,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, String value) {
@@ -577,7 +626,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, java.util.Date value) {
@@ -600,7 +649,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, LocalTime value) {
@@ -622,7 +671,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, LocalDate value) {
@@ -644,7 +693,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, LocalDateTime value) {
@@ -666,7 +715,7 @@ public class Statement implements Closeable {
 	/**
 	 * 设置SQL参数值
 	 *
-	 * @param name  参数名称
+	 * @param name 参数名称
 	 * @param value 参数值 / null
 	 */
 	public final void setValue(String name, BigDecimal value) {
@@ -688,7 +737,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -722,7 +771,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -756,7 +805,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -790,7 +839,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -824,7 +873,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -858,7 +907,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -892,7 +941,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -926,7 +975,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -960,7 +1009,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -994,7 +1043,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -1028,7 +1077,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -1062,7 +1111,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -1096,7 +1145,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -1130,7 +1179,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -1164,7 +1213,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -1198,7 +1247,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -1232,7 +1281,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -1266,7 +1315,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
@@ -1300,7 +1349,7 @@ public class Statement implements Closeable {
 	/**
 	 * 读取当前记录值
 	 *
-	 * @param name          字段名
+	 * @param name 字段名
 	 * @param default_value 值为null时的替代值
 	 * @return 指定字段值 / default_value
 	 */
