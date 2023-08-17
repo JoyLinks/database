@@ -30,7 +30,7 @@ SELECT * FROM `users` WHERE `mobile`=?mobile;
 <dependency>
 	<groupId>com.joyzl</groupId>
 	<artifactId>database</artifactId>
-	<version>2.1</version>
+	<version>2.1.2</version>
 </dependency>
 ```
 
