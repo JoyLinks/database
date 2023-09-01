@@ -239,5 +239,16 @@ try (Statement statement = Database.instance(SQL)) {
 
 #### 参与贡献
 
-1. 张希 ZhangXi
-2. 中翌智联 www.joyzl.com
+中翌智联 www.joyzl.com
+
+华腾智联 www.huatens.com
+
+张希 ZhangXi
+
+
+---
+
+
+中国制造，智造中国
+
+Made in China, Intelligent China

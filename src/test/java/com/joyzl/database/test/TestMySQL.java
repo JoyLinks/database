@@ -535,6 +535,7 @@ class TestMySQL {
 		 * 好像只在使用OUT返回参数时存在此情形，如果不指定数据库名称则会抛出 SQLException: Parameter number 2 is not an OUT parameter
 		 */
 		final String PROCEDURE = "{CALL `joyzl-database-test`.`enable_users`(?enable,?count:INTEGER)}";
+		// 单次执行
 		try (Statement statement = Database.instance(PROCEDURE)) {
 			statement.setValue("enable", true);
 			if (statement.execute()) {
@@ -545,6 +546,18 @@ class TestMySQL {
 					size++;
 				}
 				assertEquals(count, size);
+			}
+		}
+		// 多次执行
+		try (Statement statement = Database.instance(PROCEDURE)) {
+			for (int index = 0; index < 10; index++) {
+				statement.setValue("enable", true);
+				if (statement.execute()) {
+					statement.getValue("count", 0);
+					if (statement.nextRecord()) {
+						assertTrue(statement.getValue("id", 0) > 0);
+					}
+				}
 			}
 		}
 	}
