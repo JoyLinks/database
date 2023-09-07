@@ -1,5 +1,5 @@
-/*
- * www.joyzl.net
+/*-
+ * www.joyzl.com
  * 中翌智联（重庆）科技有限公司
  * Copyright © JOY-Links Company. All rights reserved.
  */
@@ -113,7 +113,7 @@ import java.util.concurrent.ArrayBlockingQueue;
  * }</code>
  * </pre>
  *
- * @author simon(ZhangXi TEL:13883833982) 2020年3月20日
+ * @author ZhangXi 2020年3月20日
  *
  */
 public final class Database {
@@ -134,11 +134,11 @@ public final class Database {
 	/**
 	 * 初始化数据库驱动
 	 *
-	 * @param type     {@link #MYSQL}/{@link #ORACLE}
-	 * @param url      数据库URL
-	 * @param user     数据库访问用户
+	 * @param type {@link #MYSQL}/{@link #ORACLE}
+	 * @param url 数据库URL
+	 * @param user 数据库访问用户
 	 * @param password 数据库访问密码
-	 * @param maximum  最大连接数
+	 * @param maximum 最大连接数
 	 */
 	public static void initialize(int type, String url, String user, String password, int maximum) {
 		TYPE = type;
@@ -149,17 +149,17 @@ public final class Database {
 
 		try {
 			switch (type) {
-			case MYSQL:
-				// Class.forName("com.mysql.jdbc.Driver");
-				// MySQL 采用了新的包名称
-				Class.forName("com.mysql.cj.jdbc.Driver");
-				break;
-			case ORACLE:
-				// jdbc:oracle:thin:@myhost:1521/myorcldbservicename
-				Class.forName("oracle.jdbc.driver.OracleDriver");
-				break;
-			default:
-				throw new IllegalArgumentException("不支持的数据库类型 " + type);
+				case MYSQL:
+					// Class.forName("com.mysql.jdbc.Driver");
+					// MySQL 采用了新的包名称
+					Class.forName("com.mysql.cj.jdbc.Driver");
+					break;
+				case ORACLE:
+					// jdbc:oracle:thin:@myhost:1521/myorcldbservicename
+					Class.forName("oracle.jdbc.driver.OracleDriver");
+					break;
+				default:
+					throw new IllegalArgumentException("不支持的数据库类型 " + type);
 			}
 		} catch (ClassNotFoundException ex) {
 			throw new RuntimeException("mysql Deiver not found", ex);
@@ -309,7 +309,7 @@ public final class Database {
 	 * {@code statement.setValue("id",1);}<br>
 	 * 如果开启事务(transaction 参数为 true) 则会将自动提交设置为 false, 执行完成后将自动提交或回滚事务
 	 *
-	 * @param sql         命名参数SQL语句
+	 * @param sql 命名参数SQL语句
 	 * @param transaction 是否开启事务
 	 * @return Statement 实例
 	 */
