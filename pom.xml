@@ -29,7 +29,7 @@
 		<developer>
 			<name>ZhangXi</name>
 			<email>simon.zhang@msn.com</email>
-			<organization>中翌智联（重庆）科技有限公司</organization>
+			<organization>重庆骄智科技有限公司</organization>
 			<organizationUrl>http://www.joyzl.com</organizationUrl>
 		</developer>
 	</developers>
@@ -48,8 +48,7 @@
 		</snapshotRepository>
 		<repository>
 			<id>ossrh</id>
-			<url>
-				https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
 
