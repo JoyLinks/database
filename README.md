@@ -1,6 +1,5 @@
-# SQL参数化组件
+# JOYZL SQL参数化组件
 
-#### 介绍
 为JDBC数据库操作标准SQL语句提供命名参数支持
 
 JDBC参数，'?'问号占位符
@@ -237,18 +236,8 @@ try (Statement statement = Database.instance(SQL)) {
 ``"{CALL `joyzl-database-test`.`enable_users`(?enable,?count:INTEGER)}"``
 
 
-#### 参与贡献
-
-中翌智联 www.joyzl.com
-
-华腾智联 www.huatens.com
-
-张希 ZhangXi
-
-
 ---
+[www.joyzl.com](http://www.joyzl.com)
 
-
-中国制造，智造中国
-
-Made in China, Intelligent China
+Copyright © 2017-2025 重庆骄智科技有限公司.
+本软件根据 Apache License 2.0 开源，详见 LICENSE 文件。
